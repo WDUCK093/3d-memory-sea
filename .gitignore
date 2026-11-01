@@ -12,3 +12,8 @@ data/my*.json
 *.bak-*
 *.backup
 .DS_Store
+
+# 数据目录在仓库外，这里再挡一层
+../memory-sea-data/
+data/*.json
+!data/demo.json
