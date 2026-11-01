@@ -195,14 +195,17 @@ export function sectorOf(text) {
   return '其他';
 }
 
-/** 「其他」日常点按时段再分：凌晨 / 上午 / 下午 / 深夜。比堆成一坨"其他"有信息量。 */
-export function dayPartOf(t) {
+/** 更细的时段分桶（2026-10-30 起用于成簇）：承认日常点就是一条时间河流，不硬编话题。 */
+export function dayPartLabelOf(t) {
   const d = new Date(Number(t) || 0);
   const hour = d.getHours();
-  if (hour >= 0 && hour < 6) return '凌晨';
+  if (hour < 5) return '深夜';
+  if (hour < 9) return '早上';
   if (hour < 12) return '上午';
+  if (hour < 14) return '中午';
   if (hour < 18) return '下午';
-  return '晚上';
+  if (hour < 22) return '晚上';
+  return '夜里';
 }
 
 /** 点的稳定 id：同一时刻同一条文本永远得到同一个 id，重复导入不会翻倍。 */
@@ -222,7 +225,14 @@ export function normalizePoint(raw, cfg = MIND_SEA_DEFAULTS) {
     : keywordsOf(text);
   const weight = Number(raw?.weight) > 0 ? Number(raw.weight) : KIND_WEIGHT[kind];
   const source = raw?.source && typeof raw.source === 'object'
-    ? { type: String(raw.source.type ?? 'unknown'), id: String(raw.source.id ?? '') }
+    ? {
+      type: String(raw.source.type ?? 'unknown'),
+      id: String(raw.source.id ?? ''),
+      // 说话人信息（2026-10-30 加）：前端据此把她说的和别人说的分成两色
+      ...(raw.source.self === true ? { self: true } : {}),
+      ...(raw.source.owner === true ? { owner: true } : {}),
+      ...(raw.source.sender ? { sender: String(raw.source.sender) } : {}),
+    }
     : { type: 'unknown', id: '' };
   return {
     id: raw?.id ? String(raw.id) : pointId(text, t),
@@ -232,6 +242,9 @@ export function normalizePoint(raw, cfg = MIND_SEA_DEFAULTS) {
     text,
     weight: Math.round(weight * 100) / 100,
     keywords,
+    // 只有情绪没有信息的应答词（哈哈/好的/知道了）：前端画成小暗点
+    ...(raw?.faint === true ? { faint: true } : {}),
+    scene: raw?.scene === 'group' ? 'group' : 'private',
     source,
   };
 }
@@ -249,8 +262,39 @@ export function pointFromLongTerm(entry, opts = {}) {
     topic: entry.topic,
     text: entry.text,
     weight: entry.active === false ? 1.5 : 3,
+    scene: 'private',
     source: { type: 'longterm', id: entry.id ?? '' },
   }, cfg);
+}
+
+/** 纯语气/应答词（去掉标点后只剩这些字的整句）不进星海：它们是对话填充物，不是记忆。 */
+const FILLER_ONLY_RE = /^(?:[嗯啊哦噢喔哈嘿嘻呵嗨呀啦吧呢嘛诶欸唉哎好对是行可以没问题没事我你他她它]+)$/;
+
+/** 只有情绪、没有信息量的常用应答词：不删，但要压成小暗点（2026-10-30 加）。 */
+const FILLER_WORDS = new Set([
+  '好', '好的', '好嘞', '好呀', '好啊', '好吧', '行', '行吧', '行呀', '可以', '可',
+  '嗯', '嗯嗯', '嗯呢', '哦', '哦哦', '噢', '喔', '啊', '啊啊', '呀', '吧', '呢',
+  '好的好的', '行行', '对对', '是是', '对对对', '是是是',
+  '没事', '没关系', '没什么', '不客气', '谢谢', '谢啦', '多谢',
+  '收到', '知道了', '明白了', '懂了', '了解', '晓得了', '知道了知道了',
+  '哈哈', '哈哈哈', '哈哈哈哈', '呵呵', '嘿嘿', '嘻嘻', '嘿', '哇', '哇塞',
+  '天哪', '我的天', '好家伙', '绝了', '牛', '厉害', '太棒了', '不错', '挺好',
+  '对的', '是啊', '是的', '不是', '真的', '确实', '那个', '这个', '然后', '就是',
+  '在', '在的', '来了', '我来了', '我回来了', '等下', '等等', '稍等', '马上',
+  '不知道', '不清楚', '不懂', '不会', '没有', '嗯呐', '噢噢', '喔喔',
+]);
+
+export function isFillerText(text) {
+  const raw = String(text ?? '').trim();
+  // 「[图片]」「[语音]」「[卡片消息]」这类占位符：只是提示"这里有条媒体"，没有文字信息
+  if (/^\[[^\]]{1,10}\]$/.test(raw)) return true;
+  const bare = raw.replace(/[，。！？、…~～,.!?\s~]/g, '');
+  if (!bare) return true;
+  if (FILLER_ONLY_RE.test(bare)) return true;
+  // 「哈哈哈哈哈哈哈」这类单字重复
+  if (bare.length >= 2 && /^(.)\1+$/.test(bare)) return true;
+  if (FILLER_WORDS.has(bare)) return true;
+  return false;
 }
 
 /** 一条真实消息 → 点（经历类）。跳过太短、纯媒体占位、以及她自己的碎句。 */
@@ -265,6 +309,8 @@ export function pointFromMessage(msg, opts = {}) {
   if (isSelf && text.length < 12) return null;
   // 语音条自动补的「翻译：…」是机械产物，不是她真说过的话
   if (/^(翻译|译文)[：:]/.test(text)) return null;
+  // 「哈哈」「好的」「知道了」这类：保留但标成 faint，前端会画成小暗点
+  const faint = isFillerText(text);
   const t = Number(msg?.at ?? msg?.ts ?? msg?.time) || Number(opts.now) || Date.now();
   const topic = typeof opts.topicOf === 'function'
     ? opts.topicOf(text)
@@ -275,7 +321,16 @@ export function pointFromMessage(msg, opts = {}) {
     topic,
     text,
     weight: fromOwner ? 1.3 : 1,
-    source: { type: 'message', id: String(msg?.id ?? msg?.messageId ?? msg?.seq ?? '') },
+    faint,
+    scene: msg?.scene === 'group' ? 'group' : 'private',
+    source: {
+      type: 'message',
+      id: String(msg?.id ?? msg?.messageId ?? msg?.seq ?? ''),
+      // 谁说的：前端据此分色（她的 = 暖色，对方/爸爸 = 冷色）
+      self: isSelf,
+      owner: fromOwner,
+      sender: String(msg?.sender ?? ''),
+    },
   }, cfg);
 }
 
@@ -294,6 +349,7 @@ export function pointFromDiary(entry, opts = {}) {
     topic: 'diary',
     text: body,
     weight: 2.6,
+    scene: 'private',
     source: { type: 'diary', id: date },
   }, cfg);
   if (!point) return null;
@@ -387,21 +443,32 @@ export function linkPoints(points, cfg = MIND_SEA_DEFAULTS) {
 /** 场景 = 点 + 边 + 统计（前端据此渲染；focusIds 是本轮检索命中的点）。 */
 export function buildScene({ points = [], focusIds = [], cfg = MIND_SEA_DEFAULTS, now = Date.now() } = {}) {
   const clean = (points || []).filter(Boolean).slice(-cfg.maxPoints);
-  // 日常（misc）点补一个 cluster 字段：前端按它成团，而不是按随机 bigram。
+  // 成簇规则（2026-10-30 改）：
+  //   有真实话题的（学校/钱/约定…）→ 按话题
+  //   日常闲聊（topic === 'misc'）→ 按时段（深夜/早上/上午/中午/下午/晚上/夜里）
+  // 以前是「先猜话题，猜不中就按时段」，结果 88% 的点都落到"闲聊"桶里，簇名也变成
+  // 晚上闲聊 / 嗯嗯哦哦 / 问来问去这种没信息量的东西。现在直接承认：日常就是时间。
   for (const point of clean) {
     if (point.topic === 'misc') {
-      const sector = sectorOf(point.text);
-      point.cluster = SECTOR_LABELS[sector === '其他' ? dayPartOf(point.t) : sector] ?? '日常琐事';
-    } else if (!point.cluster) point.cluster = topicLabel(point.topic);
+      point.cluster = dayPartLabelOf(point.t);
+    } else if (!point.cluster) {
+      point.cluster = topicLabel(point.topic);
+    }
   }
   const edges = linkPoints(clean, cfg);
   const byKind = {};
   const byTopic = {};
   const byCluster = {};
+  const bySpeaker = { self: 0, owner: 0, other: 0 };
   for (const point of clean) {
     byKind[point.kind] = (byKind[point.kind] ?? 0) + 1;
     byTopic[point.topic] = (byTopic[point.topic] ?? 0) + 1;
     byCluster[point.cluster] = (byCluster[point.cluster] ?? 0) + 1;
+    if (point.source?.type === 'message') {
+      if (point.source.self) bySpeaker.self += 1;
+      else if (point.source.owner) bySpeaker.owner += 1;
+      else bySpeaker.other += 1;
+    }
   }
   const focus = new Set(Array.isArray(focusIds) ? focusIds : []);
   return {
@@ -413,6 +480,7 @@ export function buildScene({ points = [], focusIds = [], cfg = MIND_SEA_DEFAULTS
       byKind,
       byTopic,
       byCluster,
+      bySpeaker,
       focusCount: clean.filter((p) => focus.has(p.id)).length,
       span: clean.length ? { from: clean[0].t, to: clean[clean.length - 1].t } : null,
       generatedAt: now,

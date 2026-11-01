@@ -1,5 +1,9 @@
 # 记忆海 · Memory Sea
 
+> 本项目基于 [asdfd3/3d-memory-sea](https://github.com/asdfd3/3d-memory-sea)（MIT）修改。
+> 原版是平面上的一颗颗点，这一版加了螺旋星系、双星系布局、上下文水位和服务器资源面板。
+> 原作者的贡献见文件末尾「致谢」。
+
 把「长期记忆 + 聊天记录 + 日记」画成一片可以旋转的三维星海。
 
 每个点是她经历的一件事，每根线是两件事之间的相似，颜色是类型（经历 / 心情 / 事实 / 约定 / 结论 / 日记）。左键拖动旋转，滚轮推拉，点一颗星看原文。
@@ -34,6 +38,38 @@ PORT=8080 DATA=./data/my.json npm start
 | 线 | 两点共享关键词或同主题，按分数排序，每点最多 6 条 |
 | 簇名 | 主题标签（`exam-schedule` → 「考试安排」）或时段/语气分类 |
 | 远近 | 真三维投影：远的更小更淡，按深度排序遮挡 |
+| **星系** | 私聊和群聊分成两片独立的星云，中间用「桥」连起来 |
+| **高亮** | 点中一颗星，跟它直接相连的星会亮起来，并在右侧列出「连着 N 颗星」及关联原因 |
+| **水位条** | 每个会话当前吃了多少上下文、离压缩线还剩多少、预计多久后会压缩 |
+| **资源条** | 服务器内存 / 磁盘 / 交换 / 负载 |
+| **花费柱** | 每天花了多少钱、多少次调用、数据截止到几点 |
+
+## 界面上的四块面板
+
+右上和右下各两块，都能点标题栏的 `–` 折叠。
+
+### 遗忘曲线
+
+画的是**规则**，不是某条记忆。四条线：约定永不衰减（橙虚线）、事实 30 天半衰（绿）、偏好 60 天（粉）、事件 7 天（蓝）。底下会写「当前 N 条：约定 N / 事实 N / 偏好 N / 事件 N」，让你一眼看出记忆库的构成。
+
+### 上下文水位
+
+如果每个对话是独立的一段上下文（比如每个 QQ 会话一段），这里能看到**每一段吃了多少 token、还剩多少、多久会触发压缩**。
+
+- 数据来自一个可选的 `meta.contextUsage` 字段（见下）
+- 在用的会话排在前面，历史遗留的标「弃用」沉底
+- **合计只算在用的**，不把废弃会话算进去
+- 会话显示的名字来自 `meta.sessionMap`（session → 会话 key）和 `meta.qqNames`（QQ 号 → 昵称），这样你看到的是「小明」「妈妈」而不是一串哈希
+
+### 服务器资源
+
+内存 / 磁盘 / 交换 / 负载四条进度条，超过 65% 变黄、超过 85% 变红。数据来自 `meta.contextUsage.server`。不填就不显示。
+
+### 每日花费
+
+柱状图，每天一根。数据来自 `meta.contextUsage.usage`。右下角会写「数据截止 HH:MM」，超过 15 分钟没更新会提醒你刷新。
+
+---
 
 ## 数据格式
 
@@ -62,6 +98,45 @@ PORT=8080 DATA=./data/my.json npm start
 - `isOwner: true` 的是对方说的（权重更高），`isSelf: true` 的是她说的（太短的碎句会被跳过）。
 - 长期记忆时间认 `createdAt` / `lastMentionAt`；日记认 `date`（`YYYY-MM-DD`）+ `text`。
 
+### 可选：`meta`
+
+`meta` 整块都可以不给，缺了对应的面板就自动隐藏。
+
+```json
+{
+  "meta": {
+    "exportedAt": 1793516882638,
+    "contextUsage": {
+      "ceiling": 1000000,
+      "threshold": 678464,
+      "updated": "2026-11-01 15:03:21",
+      "server": {
+        "mem_total": 1736, "mem_used": 1291, "mem_available": 445, "mem_pct": 74.4,
+        "swap_total": 4095, "swap_used": 903,
+        "disk_total": 39, "disk_used": 13, "disk_pct": 34.6,
+        "load1": 0.46, "load5": 0.27, "cpus": 2
+      },
+      "usage": {
+        "days": [{ "day": "2026-11-01", "cost": 5.19, "tokens": 163824549, "calls": 149 }],
+        "total": { "cost": 31.46, "tokens": 831144082, "calls": 814 }
+      },
+      "sessions": {
+        "session-abc123-...": {
+          "current": 308529, "remaining": 369935, "pct": 45.5,
+          "rate": 127466, "etaHours": 2.9
+        }
+      }
+    },
+    "sessionMap": { "session-abc123-...": "private:10001" },
+    "qqNames": { "10001": "小明" }
+  }
+}
+```
+
+- `sessions[].current` 是**当前**有效上下文（不是整份记录文件），`remaining` 是离压缩线还差多少，`etaHours` 是预计小时数（`null` = 看不出/没在动）
+- `sessionMap` 用来给会话起名；没映射到的会显示成「弃用 <前8位>」并置灰
+- `qqNames` 是 QQ 号到昵称的映射，纯显示用
+
 ## 三个核心模块
 
 | 文件 | 职责 |
@@ -71,6 +146,27 @@ PORT=8080 DATA=./data/my.json npm start
 | `src/mind-sea.js` | 把上面两者的数据变成点、边、簇和场景 |
 
 `src/scene-service.mjs` 是薄胶水，`src/server.mjs` 是零依赖 HTTP 服务。
+
+## 从你自己的数据生成
+
+仓库里带了一份 `examples/export-example.py`（零依赖，Python 3.8+），它演示怎么把任意来源的对话导出成 `data/my.json`：
+
+```bash
+python3 examples/export-example.py \
+  --messages my_chat.jsonl \
+  --out data/my.json
+```
+
+`my_chat.jsonl` 每行一条消息：
+
+```json
+{"at": 1761000000000, "sender": "me",   "text": "今天好累", "isOwner": true}
+{"at": 1761000060000, "sender": "her",  "text": "辛苦啦，先坐下", "isSelf": true}
+```
+
+脚本只做三件事：读你的原始数据 → 按字段规范组装 `longTerm / messages / diaries` → 写 JSON。**它不联网、不读你自己的数据库结构**，你照着改几行就能接上。
+
+> ⚠️ **千万别把真实对话提交上去。** `data/my.json` 已经在 `.gitignore` 里，改文件名的话也记得加进去。
 
 ## 接进你自己的 agent
 
@@ -146,3 +242,10 @@ memory-sea/
 ## License
 
 MIT
+
+---
+
+## 致谢
+
+- [asdfd3/3d-memory-sea](https://github.com/asdfd3/3d-memory-sea) —— 原始项目
+  （`memory-store` 状态机、`memory-retrieve` 检索打分、`mind-sea` 场景生成、零依赖 HTTP 服务，以及 v1 的单盘渲染）。本项目在此基础上扩展，见 [CHANGELOG.md](CHANGELOG.md)。

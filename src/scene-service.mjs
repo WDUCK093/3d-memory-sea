@@ -40,7 +40,7 @@ export function createSceneService({ data = {}, cfg = {} } = {}) {
   function scene({ focusIds = [], limit = 0 } = {}) {
     const source = limit > 0 ? points.slice(-limit) : points;
     const built = buildScene({ points: source, focusIds, cfg: seaCfg });
-    return { ok: true, name: state.name, builtAt, ...built };
+    return { ok: true, name: state.name, builtAt, ...built, longTerm: state.longTerm };
   }
 
   /** 换数据（比如你的 agent 每次更新记忆后调用） */

@@ -16,13 +16,28 @@
   #top h1 { margin: 0 0 4px; font-size: 15px; font-weight: 600; letter-spacing: .12em; color: #9fc1ff; }
   #top .sub { color: #6d7891; font-size: 12px; }
   #top .stats { margin-top: 8px; display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: #8e9ab5; }
+  #top #server { display: block; margin-top: 7px; white-space: normal; }
+  #top #server .sr { display: flex; align-items: center; gap: 7px; font-size: 11px; color: #8e9ab5; margin-top: 3px; }
+  #top #server .sr .k { width: 26px; flex: none; color: rgba(150,165,195,.62); }
+  #top #server .sr .bb { flex: 1; height: 4px; border-radius: 2px; background: rgba(255,255,255,.075); overflow: hidden; }
+  #top #server .sr .bb i { display: block; height: 100%; border-radius: 2px; }
+  #top #server .sr .vv { width: 92px; flex: none; text-align: right; font-variant-numeric: tabular-nums; color: rgba(170,185,215,.86); }
   #top .stats b { color: #dbe6ff; font-weight: 600; }
-  #detail { right: 16px; bottom: 16px; width: 320px; padding: 12px 14px; display: none; pointer-events: none; }
+  /* 详情浮在最上层（z-index 高于其他面板），点开时临时盖住右下的「上下文水位」，关掉就恢复 */
+  #detail { right: 16px; bottom: 16px; width: 330px; max-height: 46vh; overflow-y: auto; pointer-events: auto; padding: 12px 14px; display: none; z-index: 20; }
   #detail.on { display: block; }
   #detail .k { color: #6d7891; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
   #detail .text { margin: 6px 0 10px; color: #e8eeff; font-size: 14px; line-height: 1.6; word-break: break-word; white-space: pre-wrap; }
   #detail .row { display: flex; gap: 10px; flex-wrap: wrap; color: #7f8aa5; font-size: 12px; }
   #detail .tags span { display: inline-block; margin: 0 6px 6px 0; padding: 1px 8px; border-radius: 999px;
+  #detail .links { margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,.08); }
+  #detail .links .h { color: #6d7891; font-size: 10.5px; letter-spacing: .06em; margin-bottom: 5px; }
+  #detail .links .ln { display: flex; align-items: baseline; gap: 6px; margin: 0 0 4px; font-size: 11.5px; line-height: 1.5; }
+  #detail .links .ln b { flex: none; font-weight: 500; font-size: 10px; padding: 0 5px; border-radius: 3px; }
+  #detail .links .ln.topic b { color: #9dc4ff; background: rgba(120,170,255,.14); }
+  #detail .links .ln.word b { color: #8ff0d8; background: rgba(130,240,215,.13); }
+  #detail .links .ln.time b { color: #ffd08a; background: rgba(255,205,120,.13); }
+  #detail .links .ln span { color: #a9b6d0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
                        background: rgba(120, 160, 255, .12); color: #a9c1ff; font-size: 11px; }
   #tools { left: 16px; bottom: 16px; padding: 8px; display: flex; gap: 6px; align-items: center; }
   #tools button { background: rgba(120, 160, 255, .1); color: #b8c9ee; border: 1px solid rgba(120, 160, 255, .22);
@@ -31,6 +46,92 @@
   #tools button.on { background: rgba(120, 160, 255, .3); color: #fff; }
   #hint { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); color: #4d566d; font-size: 12px; z-index: 2; }
   #error { position: fixed; inset: 0; display: none; place-items: center; z-index: 5; color: #ff9a9a; font-size: 14px; }
+
+  /* 图例（放在左下工具栏上方，避开 #tools 与右下 #detail） */
+  #legend { position: fixed; left: 16px; bottom: 76px; z-index: 3; padding: 10px 12px;
+            background: rgba(10,14,26,.72); border: 1px solid rgba(120,160,255,.14);
+            border-radius: 10px; font-size: 12px; color: #9fb0d0; display: grid; gap: 5px;
+            backdrop-filter: blur(8px); }
+  #legend .lg { display: flex; align-items: center; gap: 7px; }
+  #legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; box-shadow: 0 0 6px currentColor; }
+
+  /* 时间轴 */
+  #timeline { position: fixed; left: 50%; bottom: 44px; transform: translateX(-50%);
+              z-index: 3; display: flex; align-items: center; gap: 10px; padding: 8px 14px;
+              background: rgba(10,14,26,.72); border: 1px solid rgba(120,160,255,.14);
+              border-radius: 10px; backdrop-filter: blur(8px); }
+  #timeline input[type=range] { width: 260px; accent-color: #78aaff; cursor: pointer; }
+  #timeline #timeLabel { color: #8fa1c4; font-size: 12px; min-width: 118px; font-variant-numeric: tabular-nums; }
+
+  /* 筛选 + 搜索（右上，避开左上 #top） */
+  #filters { position: fixed; right: 16px; top: 16px; z-index: 3; display: flex; flex-wrap: wrap;
+             gap: 6px; max-width: 320px; justify-content: flex-end; }
+  #filters button { background: rgba(120,160,255,.08); color: #b8c9ee;
+                    border: 1px solid rgba(120,160,255,.2); border-radius: 8px;
+                    padding: 5px 9px; font-size: 12px; cursor: pointer; }
+  #filters button:hover { background: rgba(120,160,255,.18); }
+  #filters button.on { background: rgba(120,160,255,.32); color: #fff; border-color: rgba(120,160,255,.5); }
+  #filters input[type=search] { background: rgba(10,14,26,.72); color: #dfe8ff;
+                                border: 1px solid rgba(120,160,255,.2); border-radius: 8px;
+                                padding: 5px 9px; font-size: 12px; width: 130px; outline: none; }
+  #filters input[type=search]:focus { border-color: rgba(120,160,255,.55); }
+
+  /* 遗忘曲线面板（右侧中部，避开右上筛选与右下详情） */
+  #decay { position: fixed; right: 16px; top: 118px; z-index: 3; width: 330px;
+           padding: 10px 12px 9px; background: rgba(10,14,26,.74);
+           border: 1px solid rgba(120,160,255,.16); border-radius: 12px;
+           backdrop-filter: blur(8px); max-height: calc(100vh - 260px); overflow-y: auto; }
+  #decay .dh { display: flex; align-items: center; justify-content: space-between;
+               font-size: 12px; letter-spacing: .08em; color: #c6d8ff; margin-bottom: 4px; }
+  #decay .dh .sub { font-size: 10px; color: #6d7f9f; letter-spacing: 0; margin-left: 6px; }
+  #decay .dh button { background: none; border: 0; color: #8ea8d8; font-size: 13px;
+                      cursor: pointer; padding: 0 2px; line-height: 1; }
+  #decay .dh button:hover { color: #dfe8ff; }
+  #decay canvas { display: block; width: 100%; height: 152px; }
+  #decay .note { font-size: 10.5px; color: #8395b8; line-height: 1.55; margin-top: 5px; }
+  #decay .note b { color: #b9cbec; font-weight: 600; }
+  #decay.folded canvas, #decay.folded .note, #decay.folded select, #decay.folded #memoryMetrics { display: none; }
+
+  /* 上下文水位面板（右侧，遗忘曲线下方） */
+  #ctx { position: fixed; right: 16px; top: 396px; z-index: 3; width: 330px;
+         padding: 10px 12px 9px; background: rgba(10,14,26,.74);
+         border: 1px solid rgba(120,160,255,.16); border-radius: 12px;
+         backdrop-filter: blur(8px); }
+  #ctx .dh { display: flex; align-items: center; justify-content: space-between;
+             font-size: 12px; letter-spacing: .08em; color: #c6d8ff; margin-bottom: 6px; }
+  #ctx .dh .sub { font-size: 10px; color: #6d7f9f; letter-spacing: 0; margin-left: 6px; }
+  #ctx .dh button { background: none; border: 0; color: #8ea8d8; font-size: 13px;
+                    cursor: pointer; padding: 0 2px; line-height: 1; }
+  #ctx .dh button:hover { color: #dfe8ff; }
+  #ctx .row { display: flex; align-items: center; gap: 7px; margin: 4px 0; font-size: 11px; }
+  /* 行多时（历史遗留的旧会话会堆在下面）让列表自己滚动，别撑出屏幕 */
+  #ctx .rows { max-height: 150px; overflow-y: auto; overflow-x: hidden;
+               padding-right: 2px; scrollbar-width: thin; }
+  #ctx .rows::-webkit-scrollbar { width: 4px; }
+  #ctx .rows::-webkit-scrollbar-thumb { background: rgba(140,170,220,.25); border-radius: 2px; }
+  #ctx .nm { width: 76px; color: #a9b8d6; text-align: right; flex: none;
+             overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #ctx .bar { flex: 1; height: 6px; background: rgba(255,255,255,.07);
+              border-radius: 3px; overflow: hidden; }
+  #ctx .bar i { display: block; height: 100%; border-radius: 3px; }
+  #ctx .pv { width: 66px; text-align: right; color: #90a0bc; flex: none;
+             font-variant-numeric: tabular-nums; }
+  #ctx .note { font-size: 10.5px; color: #8395b8; line-height: 1.5; margin-top: 5px; }
+  #ctx.folded .rows, #ctx.folded .note { display: none; }
+
+  /* 每日 token 消耗 */
+  #daily { position: fixed; left: 16px; top: 300px; width: 300px; z-index: 5;
+           background: rgba(14,18,30,.72); border: 1px solid rgba(120,140,180,.18);
+           border-radius: 12px; padding: 12px 14px; backdrop-filter: blur(9px); }
+  #daily .dh { display: flex; align-items: center; justify-content: space-between;
+               font-size: 12.5px; color: #cfd6e6; margin-bottom: 9px; }
+  #daily .dh .sub { font-size: 10.5px; color: rgba(150,165,195,.6); margin-left: 6px; }
+  #daily .dh button { background: none; border: 0; color: #8ea8d8; font-size: 13px;
+                      cursor: pointer; padding: 0 2px; line-height: 1; }
+  #daily .dh button:hover { color: #dfe8ff; }
+  #daily canvas { width: 100%; height: 98px; display: block; }
+  #daily .note { margin-top: 9px; font-size: 10.5px; line-height: 1.55; color: rgba(150,165,195,.7); }
+  #daily.folded canvas, #daily.folded .note { display: none; }
 </style>
 </head>
 <body>
@@ -40,6 +141,7 @@
   <h1>记忆海</h1>
   <div class="sub">她经历过的每一件事，都是一个点</div>
   <div class="stats" id="stats"></div>
+  <div class="stats" id="server" style="margin-top:4px;font-size:11.5px;"></div>
 </div>
 
 <div class="hud" id="detail">
@@ -47,13 +149,68 @@
   <div class="text" id="dText"></div>
   <div class="row"><span id="dTime"></span><span id="dTopic"></span><span id="dSource"></span></div>
   <div class="tags" id="dTags"></div>
+  <div class="links" id="dLinks"></div>
 </div>
 
 <div class="hud" id="tools">
   <button id="btnFocus" class="on" title="只把本轮检索命中的点连亮">高亮焦点</button>
   <button id="btnLabels" class="on" title="显示/隐藏每个点旁边的经历文字">标签</button>
   <button id="btnRecent" title="只看最近 300 个点">最近 300</button>
-  <button id="btnReset" title="回到初始视角">复位</button>
+  <button id="btnHome" title="放大看「家里」（私聊星系）">家里</button>
+  <button id="btnOut" title="放大看「外面」（群聊星系）">外面</button>
+  <button id="btnReset" title="回到全景">全景</button>
+</div>
+
+<div id="filters">
+  <input type="search" id="searchBox" placeholder="搜关键词…" />
+  <button data-kind="all" class="on">全部</button>
+  <button data-kind="self">她说的</button>
+  <button data-kind="diary">日记</button>
+  <button data-kind="plan">约定</button>
+  <button data-kind="fact">事实</button>
+  <button data-kind="memory">长期记忆</button>
+</div>
+
+<div id="legend">
+  <div class="lg"><i style="background:rgb(110,235,210);color:rgb(110,235,210)"></i>她说的</div>
+  <div class="lg"><i style="background:rgb(150,190,255);color:rgb(150,190,255)"></i>对方说的</div>
+  <div class="lg"><i style="background:rgb(255,160,210);color:rgb(255,160,210)"></i>心情</div>
+  <div class="lg"><i style="background:rgb(150,240,160);color:rgb(150,240,160)"></i>事实</div>
+  <div class="lg"><i style="background:rgb(255,210,140);color:rgb(255,210,140)"></i>约定</div>
+  <div class="lg"><i style="background:rgb(190,165,255);color:rgb(190,165,255)"></i>结论</div>
+  <div class="lg"><i style="background:rgb(255,205,120);color:rgb(255,205,120)"></i>日记</div>
+</div>
+
+<div id="decay">
+  <div class="dh">
+    <span>遗忘曲线<span class="sub">实际条目 · 规则估算</span></span>
+    <button id="decayToggle" title="收起 / 展开">–</button>
+  </div>
+  <select id="memoryCurveSelect" aria-label="选择记忆" style="width:100%;background:#101827;color:#dce8ff;border:1px solid #354561;padding:4px"></select>
+  <canvas id="decayCanvas"></canvas>
+  <div id="memoryMetrics" style="font-size:11px;line-height:1.7"></div>
+  <div class="note" id="decayNote"></div>
+</div>
+
+<div id="ctx">
+  <div class="dh"><span>上下文水位<span class="sub">每个会话吃了多少</span></span><button id="ctxToggle">–</button></div>
+  <div class="rows" id="ctxRows"></div>
+  <div class="note" id="ctxNote"></div>
+</div>
+
+<div id="daily">
+  <div class="dh">
+    <span>每天花了多少<span class="sub">token 消耗</span></span>
+    <button id="dailyToggle" title="收起 / 展开">–</button>
+  </div>
+  <canvas id="dailyCanvas"></canvas>
+  <div class="note" id="dailyNote"></div>
+</div>
+
+<div id="timeline">
+  <button id="btnPlay" title="从最早开始回放这片海">▶ 回放</button>
+  <input type="range" id="timeSlider" min="0" max="1000" value="1000" />
+  <span id="timeLabel">全部</span>
 </div>
 <div id="hint">滚轮拉近拉远 · 左键拖动旋转 · 右键拖动平移 · 点一颗星看原文</div>
 <div id="error"></div>
@@ -69,17 +226,26 @@
 
   const KIND_LABEL = { event: '经历', feeling: '心情', fact: '事实', plan: '约定', conclusion: '结论' };
   const KIND_COLOR = {
-    event: [150, 190, 255], feeling: [255, 160, 210], fact: [130, 230, 200],
+    event: [150, 190, 255], feeling: [255, 160, 210], fact: [150, 240, 160],
     plan: [255, 210, 140], conclusion: [190, 165, 255],
   };
   const DIARY_COLOR = [255, 205, 120];
+  // 经历类按"谁说的"再分两色（2026-10-30）：她说的话是暖青，别人说的是冷蓝。
+  const SELF_EVENT_COLOR = [110, 235, 210];
+  /** 一个点该用什么颜色：日记 > 她说的话 > 按 kind。 */
+  function colorOf(point) {
+    if (point.diary) return DIARY_COLOR;
+    if (point.source && point.source.self === true) return SELF_EVENT_COLOR;
+    return KIND_COLOR[point.kind] || KIND_COLOR.event;
+  }
 
   let scene = null;
   let points = [];
   let edges = [];
+  let adj = new Map();          // 邻接表：id -> [{ id, score, kind }]，用于「选中时高亮关联」
   let focus = new Set();
   const FOCAL = 1100;
-  const CAM_DEFAULT = { yaw: 0.45, pitch: -0.30, dist: 1200, panX: 0, panY: 0 };
+  const CAM_DEFAULT = { yaw: 0.26, pitch: -0.98, dist: 1800, panX: 0, panY: 0 };
   let cam = { ...CAM_DEFAULT };
   let lastPos = new Map();
   let dragging = null;
@@ -89,6 +255,18 @@
   let onlyFocus = false;
   let showLabels = true;
   let lastFetch = 0;
+  let searching = false;
+  let bgCanvas = null;          // 背景离屏画布（深空 + 星云 + 银河带 + 星场，只画一次）
+
+  // ── 时间轴 / 筛选 / 搜索 ──
+  let timeCutoff = null;        // null = 全部；否则只显示 t <= cutoff 的点
+  let filterKind = 'all';       // all | diary | plan | fact | memory | event | feeling | conclusion
+  let spanFrom = 0;
+  let spanTo = 0;
+  let playing = false;
+  let playFrom = 0;
+  let playStartedAt = 0;
+  const PLAY_MS = 24000;        // 一整轮回放的时长
 
   const hash = (str) => {
     let h = 2166136261;
@@ -104,38 +282,387 @@
     canvas.style.width = innerWidth + 'px';
     canvas.style.height = innerHeight + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    bgCanvas = null;
   }
 
-  function layout(list) {
-    // 三维：每个簇占球面上的一个方向，簇内点在各自的小球壳里散开，靠 z 拉开前后。
+  // ── 背景：深空底色 + 星云 + 银河尘埃带 + 两层星场（离屏预渲染，避免每帧重画） ──
+  function buildBackground() {
+    const c = document.createElement('canvas');
+    c.width = innerWidth;
+    c.height = innerHeight;
+    const g = c.getContext('2d');
+    const W = c.width;
+    const H = c.height;
+
+    // 1) 深空底色：中心微亮、四周沉黑
+    const rg = g.createRadialGradient(W * 0.5, H * 0.45, 30, W * 0.5, H * 0.45, Math.max(W, H) * 0.8);
+    rg.addColorStop(0, '#0b1024');
+    rg.addColorStop(0.42, '#070a17');
+    rg.addColorStop(1, '#020308');
+    g.fillStyle = rg;
+    g.fillRect(0, 0, W, H);
+
+    // 2) 星云：几团大而极淡的彩色雾，给黑底一点层次
+    const nebulas = [
+      [0.30, 0.52, 0.44, '120,150,255', 0.105],
+      [0.68, 0.38, 0.38, '175,120,225', 0.088],
+      [0.52, 0.66, 0.32, '90,200,225', 0.066],
+      [0.16, 0.30, 0.26, '255,150,190', 0.055],
+      [0.80, 0.72, 0.24, '140,180,255', 0.050],
+    ];
+    for (const [nx, ny, nr, col, al] of nebulas) {
+      const cx0 = nx * W;
+      const cy0 = ny * H;
+      const rr = nr * Math.min(W, H);
+      const ng = g.createRadialGradient(cx0, cy0, 0, cx0, cy0, rr);
+      ng.addColorStop(0, `rgba(${col},${al})`);
+      ng.addColorStop(0.4, `rgba(${col},${al * 0.5})`);
+      ng.addColorStop(1, `rgba(${col},0)`);
+      g.fillStyle = ng;
+      g.beginPath();
+      g.arc(cx0, cy0, rr, 0, Math.PI * 2);
+      g.fill();
+    }
+
+    // 3) 银河尘埃带：一条斜的、中段更亮的模糊光带
+    g.save();
+    g.translate(W * 0.5, H * 0.5);
+    g.rotate(-0.44);
+    const bandH = Math.min(W, H) * 0.40;
+    const bandGrad = g.createLinearGradient(0, -bandH, 0, bandH);
+    bandGrad.addColorStop(0, 'rgba(95,115,185,0)');
+    bandGrad.addColorStop(0.42, 'rgba(115,145,215,0.06)');
+    bandGrad.addColorStop(0.5, 'rgba(140,165,230,0.095)');
+    bandGrad.addColorStop(0.58, 'rgba(115,145,215,0.06)');
+    bandGrad.addColorStop(1, 'rgba(95,115,185,0)');
+    g.fillStyle = bandGrad;
+    g.fillRect(-W, -bandH, W * 2, bandH * 2);
+    g.restore();
+
+    // 4) 远星层：大量 1px 暗点
+    for (let i = 0; i < 900; i += 1) {
+      const x = ((hash('dx' + i) % 10000) / 10000) * W;
+      const y = ((hash('dy' + i) % 10000) / 10000) * H;
+      const a = 0.04 + ((hash('da' + i) % 100) / 100) * 0.16;
+      g.fillStyle = `rgba(165,185,225,${a})`;
+      g.fillRect(x, y, 1, 1);
+    }
+
+    // 5) 近星层：有大小与色温差异，极少数带光晕
+    for (let i = 0; i < 420; i += 1) {
+      const x = ((hash('sx' + i) % 10000) / 10000) * W;
+      const y = ((hash('sy' + i) % 10000) / 10000) * H;
+      const m = (hash('sm' + i) % 1000) / 1000;
+      const a = 0.14 + m * 0.62;
+      const tint = hash('st' + i) % 3;
+      if (m > 0.985) {
+        const glow = g.createRadialGradient(x, y, 0, x, y, 5);
+        glow.addColorStop(0, `rgba(255,255,255,${a})`);
+        glow.addColorStop(0.35, `rgba(200,220,255,${a * 0.35})`);
+        glow.addColorStop(1, 'rgba(200,220,255,0)');
+        g.fillStyle = glow;
+        g.beginPath();
+        g.arc(x, y, 5, 0, Math.PI * 2);
+        g.fill();
+      }
+      g.fillStyle = tint === 0 ? `rgba(195,215,255,${a})`
+        : tint === 1 ? `rgba(255,228,205,${a * 0.92})`
+          : `rgba(225,238,255,${a * 0.78})`;
+      g.beginPath();
+      g.arc(x, y, m > 0.93 ? 1.1 : 0.6, 0, Math.PI * 2);
+      g.fill();
+    }
+
+    bgCanvas = c;
+  }
+
+  // 单星系布局：sub 里的点按螺旋盘排，最后整体平移到 cx（世界坐标 X 偏移）
+  function layoutOne(sub, cx, rOuter, armCount, seed) {
     const clusterOf = (point) => point.cluster || (point.topic === 'misc' ? '日常琐事' : point.topic);
-    const topics = [...new Set(list.map(clusterOf))];
-    const centers = new Map();
+    const topics = [...new Set(sub.map(clusterOf))];
+    const ARM_COUNT = armCount;
+    const R_INNER = rOuter * 0.09;
+    const R_OUTER = rOuter;
+    const TWIST = (Math.PI * 2 * 1.6) / rOuter;   // 让每个盘都转 1.6 圈，小盘也不退化成直线
     const total = Math.max(1, topics.length);
+    // 每个簇占旋臂上的一段：哪条臂 + 基准半径位置 + 一点角度/厚度抖动
+    const slot = new Map();
     topics.forEach((topic, index) => {
-      // 斐波那契球面：簇与簇之间在三维里均匀铺开
-      const y = total === 1 ? 0 : 1 - (index / (total - 1)) * 2;
-      const ring = Math.sqrt(Math.max(0, 1 - y * y));
-      const phi = index * Math.PI * (3 - Math.sqrt(5)) + rand(topic) * 0.6;
-      const radius = 230 + rand(topic + 'r') * 190;
-      centers.set(topic, {
-        x: Math.cos(phi) * ring * radius,
-        y: y * radius * 0.82,
-        z: Math.sin(phi) * ring * radius,
+      slot.set(topic, {
+        arm: index % ARM_COUNT,
+        tBase: total === 1 ? 0.4 : index / (total - 1),
+        angJitter: (rand(topic + 'a') - 0.5) * 0.28,
+        yBias: (rand(topic + 'y') - 0.5) * 0.5,
       });
     });
-    list.forEach((point) => {
-      const cluster = clusterOf(point);
-      const center = centers.get(cluster) || { x: 0, y: 0, z: 0 };
-      const a = rand(point.id + 'a') * Math.PI * 2;
-      const b = Math.acos(2 * rand(point.id + 'b') - 1);
-      const rr = 16 + Math.pow(rand(point.id + 'r'), 0.65) * 120;
-      point.x = center.x + Math.sin(b) * Math.cos(a) * rr;
-      point.y = center.y + Math.cos(b) * rr * 0.72;
-      point.z = center.z + Math.sin(b) * Math.sin(a) * rr;
+    sub.forEach((point) => {
+      const s = slot.get(clusterOf(point)) || { arm: 0, tBase: 0.4, angJitter: 0, yBias: 0 };
+      // 半径位置：簇基准 ± 抖动，越靠内核越密（pow 让内圈挤）
+      const raw = Math.min(1, Math.max(0, s.tBase + (rand(point.id + 't') - 0.5) * 0.18));
+      const t = Math.pow(raw, 0.86);
+      const dist = R_INNER + t * (R_OUTER - R_INNER);
+      // 螺旋角 = 臂基准角 + 随半径增加的缠绕 + 抖动
+      const ang = (s.arm / ARM_COUNT) * Math.PI * 2 + dist * TWIST + s.angJitter + (rand(point.id + 'a') - 0.5) * 0.13;
+      // 盘厚：内圈厚（核球隆起），外圈薄
+      const thick = 40 * (1 - t * 0.75);
+      point.x = cx + Math.cos(ang) * dist;
+      point.y = (rand(point.id + 'h') - 0.5) * thick + s.yBias * 12 * (1 - t * 0.5);
+      point.z = Math.sin(ang) * dist;
       point.phase = rand(point.id + 'p') * Math.PI * 2;
       point.radius = 1.1 + Math.min(2.4, point.weight * 0.55);
     });
+    // 盘直接躺在水平面（x-z），相机自身的俯角（cam.pitch=-0.30，yaw=0.45）会把它看成倾斜的椭圆。
+    // 以前这里还额外绕 X 轴转了 TILT，结果跟相机俯角互相抵消，盘被压成一条带子——已去掉。
+  }
+
+  // 双星系：左边私聊（她的家），右边群聊（她的外面）
+  function layout(list) {
+    const priv = list.filter((p) => p.scene !== 'group');
+    const grp = list.filter((p) => p.scene === 'group');
+    layoutOne(priv, -430, 340, 3, 'p');
+    layoutOne(grp, 470, 215, 2, 'g');
+  }
+
+  // ── 遗忘曲线面板：把艾宾浩斯的衰减规则画出来（不是某一条记忆，是规则本身）──
+  let curveSignature='';
+  function positionMemoryPanels(){
+    const box=document.getElementById('decay'),ctx=document.getElementById('ctx');
+    if(!box||!ctx)return;const top=box.getBoundingClientRect().bottom+10;ctx.style.top=top+'px';
+    const rows=ctx.querySelector('.rows');if(rows)rows.style.maxHeight=Math.max(45,innerHeight-top-105)+'px';
+  }
+  function drawDecay(scene) {
+    const cv=document.getElementById('decayCanvas'),note=document.getElementById('decayNote');
+    const select=document.getElementById('memoryCurveSelect'),details=document.getElementById('memoryMetrics');
+    const items=(scene?.longTerm||[]).filter(i=>!i.deletedAt);
+    const signature=JSON.stringify(items.map(i=>[i.id,i.strength,i.reviewCount,i.status,i.text]));
+    if(signature!==curveSignature){
+      const before=select.value;select.replaceChildren();
+      for(const item of items){const opt=document.createElement('option');opt.value=item.id;opt.textContent=(item.archived?'[归档] ':'')+String(item.text).slice(0,42);select.append(opt);}
+      if(items.some(i=>i.id===before))select.value=before;curveSignature=signature;
+    }
+    const item=items.find(i=>i.id===select.value)||items[0];
+    const W=cv.clientWidth||306,H=152,dpr=Math.min(2,devicePixelRatio||1);cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
+    const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
+    if(!item||!Number.isFinite(Number(item.retention))||!Number.isFinite(Number(item.halfLifeDays))){
+      note.textContent='等待服务器导出实际记忆指标；未使用示意值代替。';details.textContent='';return;
+    }
+    const now=Number(scene.meta?.memoryMetricsAt)||Number(scene.meta?.exportedAt)||Date.now();
+    const half=Number(item.halfLifeDays),age=Math.max(0,(now-Number(item.lastReinforcedAt||now))/86400000);
+    const horizon=Math.max(30,Math.min(365,Math.ceil(Math.max(age+30,half*2))));
+    const left=32,top=12,pw=W-42,ph=H-32,x=d=>left+d/horizon*pw,y=r=>top+(1-r)*ph;
+    g.font='9px system-ui';g.fillStyle='#93a6c9';g.strokeStyle='#273751';
+    for(const r of [0,.5,1]){g.beginPath();g.moveTo(left,y(r));g.lineTo(W-10,y(r));g.stroke();g.fillText(Math.round(r*100)+'%',1,y(r)+3);}
+    for(const d of [0,Math.round(horizon/2),horizon])g.fillText(d+'天',x(d)-8,H-3);
+    g.strokeStyle=item.emotion?'#f2b28c':'#84cabb';g.lineWidth=2;g.beginPath();
+    for(let d=0;d<=horizon;d++){const retention=half?Math.pow(.5,d/half):1;d?g.lineTo(x(d),y(retention)):g.moveTo(x(d),y(retention));}g.stroke();
+    const px=x(Math.min(age,horizon)),py=y(Number(item.retention));g.fillStyle='#fff';g.beginPath();g.arc(px,py,3.5,0,Math.PI*2);g.fill();
+    const rows=[['类别',({fact:'事实',event:'事件',promise:'约定',preference:'偏好'})[item.kind]||item.kind],
+      ['当时情绪',item.emotion||'未标注'],['当前排序强度',Number(item.strength).toFixed(3)],
+      ['相对保留系数',Math.round(Number(item.retention)*100)+'%'],['半衰期',half?half.toFixed(1)+' 天':'不衰减'],
+      ['有证据的复习',String(item.reviewCount||0)+' 次'],['确认记对 / 指出遗忘',(item.reviewSuccesses||0)+' / '+(item.reviewFailures||0)],
+      ['状态',(item.archived?'归档 · ':'')+({active:'有效',expired:'过期',pending:'待确认',superseded:'被替代'})[item.status]],
+      ['复核参考时间',item.dueAt?new Date(item.dueAt).toLocaleString('zh-CN'):'无固定时间']];
+    details.replaceChildren();const table=document.createElement('table');table.style.width='100%';
+    for(const [label,value] of rows){const tr=document.createElement('tr');for(const v of [label,value]){const td=document.createElement('td');td.textContent=v;tr.append(td);}table.append(tr);}details.append(table);
+    positionMemoryPanels();
+    note.textContent='白点为导出时状态，横轴从最近一次有证据的巩固起算。曲线使用服务器同一公式，是规则估算，不是答对概率；仅显示或自动召回不会增加复习次数。数据时间：'+new Date(now).toLocaleString('zh-CN');
+  }
+
+  // 会话 → 人话名字（只保留能确证的；其余靠服务器 sessionMap 实时映射）
+  const CTX_LABEL = {
+    // preset=standard、0 字节，是最早测试留下的空会话
+    'session-4c81f746': '空会话',
+  };
+
+  // 会话编号 -> 人话。返回 null 表示「bridge 现在没用它」（历史遗留段）。
+  // 名字来源优先级：
+  //   1) 服务器 state/qq-names.json 导出的 meta.qqNames（想改称呼改那个文件即可）
+  //   2) 下面这个兜底表（只放能确证的）
+  //   3) 编号**前** 8 位（注意是「前」：session-cef3e0fb-…-b6ffd1fd9a99 取尾巴
+  //      会得到 d1fd9a99，那是同一段的尾号，曾让人以为多出了一段）
+  function ctxName(sid) {
+    const meta = (scene && scene.meta) || {};
+    const map = meta.sessionMap || {};
+    const key = map[sid];
+    if (key) {
+      const m = /^(private|group):(\d+)$/.exec(key);
+      if (m) {
+        const named = (meta.qqNames || {})[m[2]];
+        if (named) return named;
+        return (m[1] === 'group' ? '群 ' : '私聊 ') + m[2].slice(-4);
+      }
+    }
+    for (const k of Object.keys(CTX_LABEL)) {
+      if (sid.startsWith(k)) return CTX_LABEL[k];
+    }
+    return null;
+  }
+
+  function renderCtx(scene) {
+    const rowsEl = document.getElementById('ctxRows');
+    const noteEl = document.getElementById('ctxNote');
+    if (!rowsEl) return;
+    const cu = scene && scene.meta && scene.meta.contextUsage;
+    if (!cu || !cu.sessions) {
+      noteEl.textContent = '还没有上下文数据（等下一次 watch-compaction 跑完）';
+      rowsEl.innerHTML = '';
+      return;
+    }
+    const ceiling = cu.ceiling || 1000000;
+    const threshold = cu.threshold || 500000;
+    // 现在在用的会话排前面，历史遗留段沉底（它们不再增长，也不该占视线）
+    const smap = (scene && scene.meta && scene.meta.sessionMap) || {};
+    const items = Object.entries(cu.sessions)
+      .filter(([, v]) => (v.current || v.est || 0) > 0)
+      .sort((a, b) => {
+        const ma = smap[a[0]] ? 0 : 1;
+        const mb = smap[b[0]] ? 0 : 1;
+        if (ma !== mb) return ma - mb;
+        return (b[1].current || 0) - (a[1].current || 0);
+      });
+    rowsEl.innerHTML = items.map(([sid, v]) => {
+      const key = sid.slice(0, 18);
+      const realName = ctxName(sid);
+      const sidShort = sid.replace(/^session-/, '').slice(0, 8);
+      const name = realName || ('弃用 ' + sidShort);
+      const cur = v.current || 0;
+      const remain = v.remaining != null ? v.remaining : Math.max(0, threshold - cur);
+      const p = Math.max(0, Math.min(100, 100 * cur / threshold));
+      // 没在用的旧段一律灰掉：它们不再增长，也不该跟着报警
+      const color = realName
+        ? (p >= 70 ? '255,110,110' : (p >= 30 ? '255,205,120' : '130,225,160'))
+        : '120,128,145';
+      const right = cur >= 1000 ? Math.round(cur / 1000) + 'K' : String(cur);
+      // 预计多久后压缩（按最近事件推算的增速）
+      let etaShort = '';
+      let etaLong = '';
+      if (v.etaHours != null && isFinite(v.etaHours)) {
+        const e = v.etaHours;
+        etaShort = e < 1 ? '<1h' : (e >= 100 ? '很远' : Math.round(e) + 'h');
+        etaLong = e < 1 ? '不到 1 小时' : (e >= 100 ? '很久以后' : '约 ' + Math.round(e) + ' 小时');
+      } else if (v.rate === null || v.rate === undefined) {
+        etaShort = '—';
+        etaLong = '最近没动静，暂时估不出';
+      }
+      const title = '已用 ' + cur + ' tokens，距压缩还差 ' + remain + ' tokens'
+        + (v.rate ? '\n最近增速约 ' + v.rate + ' tokens/小时' : '')
+        + (etaLong ? '\n预计 ' + etaLong + '后压缩' : '');
+      return '<div class="row" title="' + title + '">'
+        + '<span class="nm">' + name + '</span>'
+        + '<span class="bar"><i style="width:' + p + '%;background:rgb(' + color + ')"></i></span>'
+        + '<span class="pv">' + right + '<br><em>剩' + Math.round(remain / 1000) + 'K</em>'
+        + (etaShort ? '<br><em style="color:rgba(255,205,120,.78);font-size:9.5px">' + etaShort + '</em>' : '')
+        + '</span></div>';
+    }).join('');
+    // 只统计「现在在用的」会话，历史遗留段不算进来（否则合计虚高）
+    const live = items.filter(([sid]) => smap[sid]);
+    const total = live.reduce((a, [, v]) => a + (v.current || 0), 0);
+    const nearest = live.reduce((m, [, v]) => {
+      const r = v.remaining != null ? v.remaining : threshold;
+      return Math.min(m, r);
+    }, Infinity);
+    // 最快会压缩的那个：eta 最小的
+    const soonest = live.reduce((best, [, v]) => {
+      if (v.etaHours == null || !isFinite(v.etaHours)) return best;
+      return (best == null || v.etaHours < best) ? v.etaHours : best;
+    }, null);
+    const soonTxt = soonest == null
+      ? '暂时看不出什么时候会压缩（各会话最近都没怎么动）'
+      : (soonest < 1 ? '最快那个会话不到 1 小时就要压缩了'
+        : '最快那个会话约 <b>' + Math.round(soonest) + ' 小时</b>后压缩');
+    noteEl.innerHTML = '合计当前 <b>' + Math.round(total / 1000) + 'K</b> · 压缩阈值 <b>'
+      + Math.round(threshold / 1000) + 'K</b> · 上限 <b>'
+      + Math.round(ceiling / 1000) + 'K</b><br>'
+      + '最近的那个会话再涨 <b>' + Math.round((nearest === Infinity ? 0 : nearest) / 1000)
+      + 'K</b> 就要压缩了<br>'
+      + soonTxt;
+  }
+
+  // ── 每天花了多少（柱状图）──
+  function renderDaily(scene) {
+    const cv = document.getElementById('dailyCanvas');
+    const noteEl = document.getElementById('dailyNote');
+    if (!cv) return;
+    const u = scene && scene.meta && scene.meta.contextUsage && scene.meta.contextUsage.usage;
+    const days = (u && u.days) || [];
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const w = cv.clientWidth || 272;
+    const h = cv.clientHeight || 98;
+    cv.width = Math.round(w * dpr);
+    cv.height = Math.round(h * dpr);
+    const g = cv.getContext('2d');
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, w, h);
+    if (!days.length) {
+      noteEl.textContent = '还没有消耗数据';
+      return;
+    }
+    const topPad = 15;   // 顶部留给金额
+    const botPad = 14;   // 底部留给日期
+    const pw = w;
+    const ph = Math.max(20, h - topPad - botPad);
+    const maxCost = Math.max(...days.map((d) => d.cost), 0.01);
+    const n = days.length;
+    const gap = n > 8 ? 3 : 9;
+    const bw = Math.max(6, (pw - gap * (n - 1)) / n);
+    // 横向网格
+    g.strokeStyle = 'rgba(255,255,255,.055)';
+    g.lineWidth = 1;
+    [0, 0.5, 1].forEach((r) => {
+      const y = topPad + ph - r * ph;
+      g.beginPath(); g.moveTo(0, y); g.lineTo(pw, y); g.stroke();
+    });
+    days.forEach((d, i) => {
+      const bh = Math.max(2, (d.cost / maxCost) * (ph - 2));
+      const x = i * (bw + gap);
+      const y = topPad + ph - bh;
+      // 今天用亮青，其他用暗蓝
+      const isToday = i === n - 1;
+      const grad = g.createLinearGradient(0, y, 0, topPad + ph);
+      if (isToday) {
+        grad.addColorStop(0, 'rgba(120,235,210,.95)');
+        grad.addColorStop(1, 'rgba(120,235,210,.22)');
+      } else {
+        grad.addColorStop(0, 'rgba(130,170,235,.85)');
+        grad.addColorStop(1, 'rgba(130,170,235,.16)');
+      }
+      g.fillStyle = grad;
+      g.beginPath();
+      const r = Math.min(3, bw / 2);
+      g.moveTo(x, topPad + ph);
+      g.lineTo(x, y + r);
+      g.quadraticCurveTo(x, y, x + r, y);
+      g.lineTo(x + bw - r, y);
+      g.quadraticCurveTo(x + bw, y, x + bw, y + r);
+      g.lineTo(x + bw, topPad + ph);
+      g.closePath();
+      g.fill();
+      // 金额（柱子上方，保证在画布内）
+      g.fillStyle = isToday ? 'rgba(160,250,230,.98)' : 'rgba(190,210,245,.92)';
+      g.font = '10px ui-monospace, Menlo, Consolas, monospace';
+      g.textAlign = 'center';
+      g.fillText(d.cost.toFixed(2), x + bw / 2, Math.max(10, y - 3.5));
+      // 日期
+      g.fillStyle = 'rgba(150,165,195,.68)';
+      g.font = '9.5px ui-monospace, Menlo, Consolas, monospace';
+      g.fillText(d.day.slice(5), x + bw / 2, topPad + ph + 12);
+    });
+    const t = u.total || {};
+    const tokensYi = (t.tokens || 0) / 1e8;
+    // 数据截止时间：拿服务器 context-usage.json 的 updated（每 10 分钟刷新）
+    const cu = scene && scene.meta && scene.meta.contextUsage;
+    const upd = (cu && cu.updated) ? String(cu.updated).slice(5, 16) : '';
+    const staleMin = (cu && cu.updated) ? Math.round((Date.now() - new Date(String(cu.updated).replace(' ', 'T') + '+08:00').getTime()) / 60000) : null;
+    const stamp = upd
+      ? '<br><span style="color:rgba(150,165,195,.5)">数据截止 ' + upd
+        + (staleMin !== null && staleMin > 15 ? '（' + staleMin + ' 分钟前，双击「打开记忆海.bat」刷新）' : '')
+        + '</span>'
+      : '';
+    noteEl.innerHTML = '共 <b>' + (t.calls || 0) + '</b> 次调用 · <b>'
+      + (tokensYi >= 1 ? tokensYi.toFixed(2) + ' 亿' : Math.round((t.tokens || 0) / 1e6) + ' M')
+      + '</b> tokens<br>合计 <b style="color:#8ef0d5">' + (t.cost || 0).toFixed(2) + ' 元</b>'
+      + '　最近一天 <b>' + (days[days.length - 1].cost || 0).toFixed(2) + ' 元</b>'
+      + stamp;
   }
 
   function ingest(data) {
@@ -145,12 +672,91 @@
     focus = new Set(data.focusIds || []);
     const byId = new Map(points.map((p) => [p.id, p]));
     edges = (data.edges || []).filter((e) => byId.has(e.a) && byId.has(e.b));
+    // 建邻接表（双向）
+    adj = new Map();
+    for (const e of edges) {
+      if (!adj.has(e.a)) adj.set(e.a, []);
+      if (!adj.has(e.b)) adj.set(e.b, []);
+      adj.get(e.a).push({ id: e.b, score: e.score, kind: e.kind });
+      adj.get(e.b).push({ id: e.a, score: e.score, kind: e.kind });
+    }
+    for (const arr of adj.values()) arr.sort((x, y) => y.score - x.score);
     const s = data.stats || {};
     const span = s.span ? Math.max(1, Math.round((s.span.to - s.span.from) / 86400000)) : 0;
+    // 记录时间跨度，供时间轴回放用
+    spanFrom = Number(s.span?.from) || (points.length ? Number(points[0].t) || 0 : 0);
+    spanTo = Number(s.span?.to) || (points.length ? Number(points[points.length - 1].t) || 0 : 0);
+    if (!spanTo || spanTo <= spanFrom) spanTo = spanFrom + 1;
+    timeCutoff = null;
+    const slider = document.getElementById('timeSlider');
+    if (slider) slider.value = '1000';
+    const label = document.getElementById('timeLabel');
+    if (label) label.textContent = '全部';
+    // URL 直达某个时间点：?t=0~1000（必须等 span 已知才能换算）
+    const initT = params.get('t');
+    if (initT != null && initT !== '') {
+      const sl = document.getElementById('timeSlider');
+      if (sl) { sl.value = initT; }
+      timeCutoff = spanFrom + (spanTo - spanFrom) * (Number(initT) / 1000);
+      if (label) {
+        const d = new Date(timeCutoff);
+        const p2 = (n) => String(n).padStart(2, '0');
+        label.textContent = `${d.getMonth() + 1}/${d.getDate()} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
+      }
+    }
+    // URL 直达搜索：?q=关键词
+    const initQ = params.get('q');
+    if (initQ) {
+      const box = document.getElementById('searchBox');
+      if (box) {
+        box.value = initQ;
+        searching = true;
+        const q = initQ.trim().toLowerCase();
+        focus = new Set(points.filter((p) => {
+          const hay = `${p.full || ''} ${p.text || ''} ${(p.keywords || []).join(' ')} ${p.topic || ''} ${p.cluster || ''}`.toLowerCase();
+          return hay.includes(q);
+        }).map((p) => p.id));
+      }
+    }
     elStats.innerHTML = [
       `点 <b>${s.total || 0}</b>`, `线 <b>${s.edges || edges.length}</b>`,
-      `跨度 <b>${span}</b> 天`, `焦点 <b>${s.focusCount || 0}</b>`,
+      `跨度 <b>${span}</b> 天`, `焦点 <b id="focusN">${focus.size}</b>`,
     ].join('<span style="color:#2a3245"> | </span>');
+    renderServer(scene);
+    drawDecay(scene);
+    renderCtx(scene);
+    renderDaily(scene);
+    // URL 直达某颗星：?sel=<pointId>（点开详情 + 高亮它的关联线）
+    const initSel = params.get('sel');
+    if (initSel) {
+      const hit = points.find((p) => p.id === initSel);
+      if (hit) { selected = hit.id; showDetail(hit); }
+    }
+  }
+
+  // 服务器占用（内存 / 磁盘 / 负载），数据来自 meta.contextUsage.server
+  function renderServer(scene) {
+    const box = document.getElementById('server');
+    if (!box) return;
+    const sv = scene?.meta?.contextUsage?.server;
+    if (!sv || !sv.mem_total) { box.innerHTML = ''; return; }
+    const pick = (pct) => (pct >= 85 ? '255,120,120' : pct >= 65 ? '255,205,120' : '140,225,170');
+    const memPct = Math.round(sv.mem_pct ?? (100 * sv.mem_used / sv.mem_total));
+    const diskPct = Math.round(sv.disk_pct ?? (100 * sv.disk_used / sv.disk_total));
+    const swapPct = sv.swap_total ? Math.round(100 * sv.swap_used / sv.swap_total) : 0;
+    const loadPct = sv.cpus ? Math.min(100, Math.round(100 * sv.load1 / sv.cpus)) : 0;
+    const row = (label, pct, text) => {
+      const c = pick(pct);
+      return `<div class="sr"><span class="k">${label}</span>`
+        + `<span class="bb"><i style="width:${Math.max(1, Math.min(100, pct))}%;background:rgb(${c})"></i></span>`
+        + `<span class="vv">${text}</span></div>`;
+    };
+    box.innerHTML = [
+      row('内存', memPct, `${sv.mem_used}/${sv.mem_total}M  ${memPct}%`),
+      row('磁盘', diskPct, `${sv.disk_used}/${sv.disk_total}G  ${diskPct}%`),
+      row('交换', swapPct, `${sv.swap_used ?? 0}/${sv.swap_total ?? 0}M  ${swapPct}%`),
+      row('负载', loadPct, `${sv.load1 ?? '?'} / ${sv.cpus ?? '?'} 核`),
+    ].join('');
   }
 
   async function load(rebuild) {
@@ -168,9 +774,22 @@
     }
   }
 
+  // 可见集合 = 时间轴截断 ∩ 类型筛选
+  function kindMatches(point) {
+    if (filterKind === 'all') return true;
+    if (filterKind === 'self') return point.source?.self === true;
+    if (filterKind === 'diary') return !!point.diary;
+    if (filterKind === 'memory') return point.source?.type === 'longterm';
+    if (filterKind === 'fact') return point.kind === 'fact' || point.kind === 'conclusion';
+    return point.kind === filterKind;
+  }
+
   function visiblePoints() {
-    if (onlyFocus && focus.size) return points.filter((p) => focus.has(p.id) || true);
-    return points;
+    const cut = timeCutoff;
+    return points.filter((p) => {
+      if (cut != null && (Number(p.t) || 0) > cut) return false;
+      return kindMatches(p);
+    });
   }
 
   // 三维投影：先绕 Y 轴转（yaw）、再绕 X 轴转（pitch），最后透视除法。
@@ -198,18 +817,38 @@
   }
 
   function frame(t) {
-    ctx.clearRect(0, 0, innerWidth, innerHeight);
-    // 背景星尘
-    ctx.save();
-    ctx.globalAlpha = 0.5;
-    for (let i = 0; i < 140; i += 1) {
-      const x = (hash('bg' + i) % 1000) / 1000 * innerWidth;
-      const y = (hash('bgy' + i) % 1000) / 1000 * innerHeight;
-      const a = 0.05 + ((Math.sin(t / 2600 + i) + 1) / 2) * 0.12;
-      ctx.fillStyle = `rgba(150,180,255,${a})`;
-      ctx.fillRect(x, y, 1, 1);
+    // 回放：按时间匀速推进，把这片海一天天点亮
+    if (playing) {
+      const k = Math.min(1, (Date.now() - playFrom) / PLAY_MS);
+      const v = Math.round(k * 1000);
+      slider.value = String(v);
+      applyCutoff(v);
+      if (k >= 1) {
+        playing = false;
+        playBtn.textContent = '▶ 回放';
+      }
     }
-    ctx.restore();
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    // 背景：离屏预渲染的深空/星云/银河带/星场 + 少量缓慢闪烁的星
+    if (!bgCanvas || bgCanvas.width !== Math.floor(innerWidth) || bgCanvas.height !== Math.floor(innerHeight)) {
+      buildBackground();
+    }
+    ctx.drawImage(bgCanvas, 0, 0);
+    if (!onlyFocus) {
+      ctx.save();
+      for (let i = 0; i < 220; i += 1) {
+        const x = ((hash('twx' + i) % 10000) / 10000) * innerWidth;
+        const y = ((hash('twy' + i) % 10000) / 10000) * innerHeight;
+        const ph = ((hash('twp' + i) % 1000) / 1000) * Math.PI * 2;
+        const a = 0.08 + ((Math.sin(t / 2100 + ph) + 1) / 2) * 0.40;
+        const sz = 0.7 + ((hash('tws' + i) % 100) / 100) * 1.1;
+        ctx.fillStyle = `rgba(210,228,255,${a})`;
+        ctx.beginPath();
+        ctx.arc(x, y, sz, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
 
     const list = visiblePoints();
     const pos = new Map();
@@ -222,13 +861,39 @@
 
     // 线
     ctx.lineWidth = 1;
+    const shown = new Set();   // 本轮要画的点（选中时也包含邻居）
     for (const edge of edges) {
       if (!idx.has(edge.a) || !idx.has(edge.b)) continue;
       if (onlyFocus && !(focus.has(edge.a) && focus.has(edge.b))) continue;
       const a = pos.get(edge.a);
       const b = pos.get(edge.b);
       const near = (a.f + b.f) * 0.5;
-      const alpha = Math.min(0.5, (0.03 + edge.score * 0.18) * near * 1.7);
+      const isSelEdge = selected && (edge.a === selected || edge.b === selected);
+      if (isSelEdge) {
+        // 选中的关联线：粗、亮、按类型上色
+        ctx.save();
+        ctx.lineWidth = 2.2;
+        ctx.strokeStyle = edge.kind === 'topic'
+          ? 'rgba(120,190,255,.92)'
+          : edge.kind === 'word'
+            ? 'rgba(130,240,215,.92)'
+            : 'rgba(255,205,120,.85)';
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+        // 终点加一个小光点，指向关联的那颗星
+        ctx.fillStyle = ctx.strokeStyle;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, 2.6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        shown.add(edge.a);
+        shown.add(edge.b);
+        continue;
+      }
+      let alpha = Math.min(0.5, (0.03 + edge.score * 0.18) * near * 1.7);
+      if (selected) alpha *= 0.18;   // 选中时其他线淡下去
       ctx.strokeStyle = edge.kind === 'topic'
         ? `rgba(120,170,255,${alpha})`
         : `rgba(180,200,230,${alpha * 0.8})`;
@@ -259,34 +924,43 @@
     ctx.textAlign = 'left';
 
     // 点：远小近大、远淡近亮
+    const neighborIds = selected ? new Set((adj.get(selected) || []).map((n) => n.id)) : null;
     for (const point of order) {
       const p = pos.get(point.id);
       const isFocus = focus.has(point.id);
       const isSel = selected === point.id;
       const isHover = hovered === point.id;
-      const [r, g, b] = point.diary ? DIARY_COLOR : (KIND_COLOR[point.kind] || KIND_COLOR.event);
-      const dim = onlyFocus && !isFocus;
-      const base = Math.max(0.8, point.radius * (isFocus ? 1.9 : 1) * p.f * 1.75);
-      ctx.globalAlpha = dim ? 0.1 : Math.min(1, 0.22 + p.f * 1.05);
+      const isNeighbor = !!(neighborIds && neighborIds.has(point.id));
+      const [r, g, b] = colorOf(point);
+      let dim = (onlyFocus || searching) && !isFocus && !isHover;
+      // 选中某个点时：只留它 + 它的邻居，其他全暗下去
+      if (neighborIds && !isSel && !isNeighbor) dim = true;
+      // faint = 「哈哈 / 好的 / 知道了」这类只有情绪没有信息的话：画小画暗，让真内容浮出来
+      const faintScale = point.faint && !isFocus && !isHover && !isSel ? 0.55 : 1;
+      const neighborBoost = isNeighbor ? 1.35 : 1;
+      const base = Math.max(0.55, point.radius * (isFocus || isNeighbor ? 1.9 : 1) * neighborBoost * p.f * 1.75 * faintScale);
+      const faintAlpha = point.faint && !isFocus && !isHover && !isSel ? 0.32 : 1;
+      ctx.globalAlpha = dim ? 0.1 : Math.min(1, 0.22 + p.f * 1.05) * faintAlpha;
 
-      if (isFocus || isHover || isSel) {
-        const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, base * 7);
-        glow.addColorStop(0, `rgba(${r},${g},${b},${isSel ? 0.55 : 0.35})`);
+      if (isFocus || isHover || isSel || isNeighbor) {
+        const glowR = base * (isNeighbor ? 5 : 7);
+        const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowR);
+        glow.addColorStop(0, `rgba(${r},${g},${b},${isSel ? 0.55 : isNeighbor ? 0.42 : 0.35})`);
         glow.addColorStop(1, `rgba(${r},${g},${b},0)`);
         ctx.fillStyle = glow;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, base * 7, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, glowR, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = `rgba(${r},${g},${b},${0.5 + 0.3 * Math.sin(t / 600)})`;
         ctx.lineWidth = 1.2;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, base * 3.2, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, base * (isNeighbor ? 2.6 : 3.2), 0, Math.PI * 2);
         ctx.stroke();
       }
 
-      ctx.fillStyle = `rgba(${r},${g},${b},${isFocus ? 1 : 0.85})`;
+      ctx.fillStyle = `rgba(${r},${g},${b},${isFocus ? 1 : (point.faint ? 0.5 : 0.85)})`;
       ctx.beginPath();
-      ctx.arc(p.x, p.y, Math.max(0.8, base), 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, Math.max(point.faint ? 0.5 : 0.8, base), 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.globalAlpha = 1;
@@ -314,8 +988,33 @@
       }
     }
 
+    drawGalaxyLabels(t);
+
     if (Date.now() - lastFetch > 60000) load(false);
     requestAnimationFrame(frame);
+  }
+
+  // 两个星系的名字，标在各自核心上方
+  function drawGalaxyLabels(t) {
+    const labels = [
+      { x: -430, y: 0, z: 0, text: '家里 · 私聊', rgb: '150,190,255', dy: -250 },
+      { x: 470, y: 0, z: 0, text: '外面 · 群聊', rgb: '150,240,160', dy: -160 },
+    ];
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '600 13px "Microsoft YaHei", sans-serif';
+    for (const lb of labels) {
+      // 聚焦某个星系时，另一个星系的标签藏起来（不然会飘到屏幕角落）
+      if (cam.panX > 120 && lb.x > 0) continue;    // 看家里时，藏掉「外面」的标签
+      if (cam.panX < -120 && lb.x < 0) continue;   // 看外面时，藏掉「家里」的标签
+      const p = project({ x: lb.x, y: lb.y, z: lb.z, phase: 0 }, t);
+      if (!p) continue;
+      const a = Math.min(0.88, Math.max(0.3, 1.7 - p.depth / 2400));
+      ctx.fillStyle = `rgba(${lb.rgb},${a})`;
+      ctx.fillText(lb.text, p.x, p.y + (lb.dy || 0));
+    }
+    ctx.restore();
   }
 
   // 每个点旁边标一句它是什么：按权重挑、按屏幕格子避让，缩放越大标得越多。
@@ -375,7 +1074,9 @@
 
   function showDetail(point) {
     if (!point) { detail.classList.remove('on'); return; }
+    if(point.source?.type==='longterm'){document.getElementById('memoryCurveSelect').value=point.source.id;drawDecay(scene);}
     detail.classList.add('on');
+    detail.scrollTop = 0;   // 每次点开都从正文开头看，不要停在上一颗星滚到的位置
     document.getElementById('dKind').textContent = point.diary ? `她的日记 · ${point.diary.date}` : (KIND_LABEL[point.kind] || point.kind);
     document.getElementById('dText').textContent = point.full || point.text;
     const when = new Date(point.t);
@@ -383,6 +1084,21 @@
     document.getElementById('dTopic').textContent = `主题 ${point.cluster || point.topic}`;
     document.getElementById('dSource').textContent = point.source?.type === 'diary' ? '来自她自己写的日记' : (point.source?.type === 'longterm' ? '来自长期记忆' : '来自真实消息');
     document.getElementById('dTags').innerHTML = (point.keywords || []).map((k) => `<span>${k}</span>`).join('');
+    // 关联：这个点跟谁连着、凭什么连着
+    const links = (adj.get(point.id) || []).slice(0, 6);
+    const box = document.getElementById('dLinks');
+    if (!links.length) {
+      box.innerHTML = '<div class="h">跟谁都不挨着</div>';
+    } else {
+      const KIND_TXT = { topic: '同主题', word: '同一个词', time: '只是挨得近' };
+      const byId = new Map(points.map((q) => [q.id, q]));
+      box.innerHTML = `<div class="h">连着 ${(adj.get(point.id) || []).length} 颗星，最紧的 ${links.length} 颗：</div>`
+        + links.map((n) => {
+          const q = byId.get(n.id);
+          const txt = q ? (q.full || q.text || '').slice(0, 18) : '（找不到）';
+          return `<div class="ln ${n.kind}"><b>${KIND_TXT[n.kind] || n.kind}</b><span>${txt}${txt.length >= 18 ? '…' : ''}</span></div>`;
+        }).join('');
+    }
   }
 
   // 左键拖动 = 转整片海（三维），右键拖动 = 平移，滚轮 = 拉近拉远。
@@ -460,9 +1176,150 @@
       load(false);
     }
   });
-  document.getElementById('btnReset').addEventListener('click', () => { cam = { ...CAM_DEFAULT }; });
+  // 三个视角：全景 / 家里（左盘）/ 外面（右盘）
+  // panX 取反：投影里 wx = point.x + cam.panX，要让左盘(-430)移到屏幕中心，panX 必须是 +430
+  const VIEWS = {
+    all: { ...CAM_DEFAULT },
+    home: { yaw: 0.14, pitch: -1.16, dist: 820, panX: 430, panY: 0 },
+    out: { yaw: 0.14, pitch: -1.16, dist: 470, panX: -470, panY: 0 },
+  };
 
-  window.addEventListener('resize', resize);
+  // 平滑飞过去（每帧朝目标走 18%）
+  let flyRaf = 0;
+  function flyTo(view) {
+    const goal = VIEWS[view] || CAM_DEFAULT;
+    if (flyRaf) cancelAnimationFrame(flyRaf);
+    const step = () => {
+      let done = true;
+      for (const k of ['yaw', 'pitch', 'dist', 'panX', 'panY']) {
+        const d = goal[k] - cam[k];
+        if (Math.abs(d) > 0.5) { cam[k] += d * 0.18; done = false; }
+        else cam[k] = goal[k];
+      }
+      if (!done) flyRaf = requestAnimationFrame(step);
+      else flyRaf = 0;
+    };
+    step();
+  }
+
+  document.getElementById('btnReset').addEventListener('click', () => flyTo('all'));
+  document.getElementById('btnHome').addEventListener('click', () => flyTo('home'));
+  document.getElementById('btnOut').addEventListener('click', () => flyTo('out'));
+
+  // ?view=home / ?view=out 打开就聚焦
+  {
+    const want = new URLSearchParams(location.search).get('view');
+    if (want && VIEWS[want]) setTimeout(() => flyTo(want), 250);
+  }
+
+  // ── 类型筛选 ──
+  document.querySelectorAll('#filters button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      filterKind = btn.dataset.kind || 'all';
+      document.querySelectorAll('#filters button').forEach((b) => b.classList.toggle('on', b === btn));
+    });
+  });
+  // 支持 URL 直达：?kind=diary / plan / fact / memory / all
+  const initKind = params.get('kind');
+  if (initKind) {
+    filterKind = initKind;
+    document.querySelectorAll('#filters button').forEach((b) => b.classList.toggle('on', b.dataset.kind === initKind));
+  }
+
+  // ── 关键词搜索：命中的点发光 ──
+  const searchBox = document.getElementById('searchBox');
+  const resetFocus = () => { focus = new Set((scene && scene.focusIds) || []); };
+  const syncFocusCount = () => {
+    const el = document.getElementById('focusN');
+    if (el) el.textContent = String(focus.size);
+  };
+  searchBox.addEventListener('input', () => {
+    const q = searchBox.value.trim().toLowerCase();
+    searching = !!q;
+    if (!q) { resetFocus(); syncFocusCount(); return; }
+    focus = new Set(points.filter((p) => {
+      const hay = `${p.full || ''} ${p.text || ''} ${(p.keywords || []).join(' ')} ${p.topic || ''} ${p.cluster || ''}`.toLowerCase();
+      return hay.includes(q);
+    }).map((p) => p.id));
+    selected = null;
+    syncFocusCount();
+  });
+
+  // ── 时间轴回放 ──
+  const slider = document.getElementById('timeSlider');
+  const timeLabel = document.getElementById('timeLabel');
+  const playBtn = document.getElementById('btnPlay');
+  const pad2 = (n) => String(n).padStart(2, '0');
+  const fmtTime = (ms) => {
+    const d = new Date(ms);
+    return `${d.getMonth() + 1}/${d.getDate()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+  };
+  function applyCutoff(v) {
+    if (!spanTo || spanTo <= spanFrom) { timeLabel.textContent = '全部'; return; }
+    if (v >= 999) {
+      timeCutoff = null;
+      timeLabel.textContent = `全部 · ${fmtTime(spanTo)}`;
+    } else {
+      timeCutoff = spanFrom + (spanTo - spanFrom) * (v / 1000);
+      timeLabel.textContent = fmtTime(timeCutoff);
+    }
+  }
+  slider.addEventListener('input', () => {
+    playing = false;
+    playBtn.textContent = '▶ 回放';
+    applyCutoff(Number(slider.value));
+  });
+  playBtn.addEventListener('click', () => {
+    if (playing) {
+      playing = false;
+      playBtn.textContent = '▶ 回放';
+      return;
+    }
+    playing = true;
+    playFrom = Date.now();
+    slider.value = '0';
+    applyCutoff(0);
+    playBtn.textContent = '⏸ 暂停';
+  });
+
+  // 遗忘曲线面板：收起 / 展开
+  const decayBox = document.getElementById('decay');
+  const decayToggle = document.getElementById('decayToggle');
+  if (decayToggle && decayBox) {
+    decayToggle.addEventListener('click', () => {
+      const folded = decayBox.classList.toggle('folded');
+      decayToggle.textContent = folded ? '+' : '–';
+      if (!folded) drawDecay(scene);
+      positionMemoryPanels();
+    });
+  }
+
+  document.getElementById('memoryCurveSelect').addEventListener('change',()=>drawDecay(scene));
+  const ctxBox = document.getElementById('ctx');
+  const ctxToggle = document.getElementById('ctxToggle');
+  if (ctxToggle && ctxBox) {
+    ctxToggle.addEventListener('click', () => {
+      const folded = ctxBox.classList.toggle('folded');
+      ctxToggle.textContent = folded ? '+' : '–';
+    });
+  }
+
+  const dailyBox = document.getElementById('daily');
+  const dailyToggle = document.getElementById('dailyToggle');
+  if (dailyToggle && dailyBox) {
+    dailyToggle.addEventListener('click', () => {
+      const folded = dailyBox.classList.toggle('folded');
+      dailyToggle.textContent = folded ? '+' : '–';
+      if (!folded) renderDaily(scene);
+    });
+  }
+
+  window.addEventListener('resize', () => {
+    resize();
+    if (decayBox && !decayBox.classList.contains('folded')) drawDecay(scene);
+    if (dailyBox && !dailyBox.classList.contains('folded')) renderDaily(scene);
+    positionMemoryPanels();
+  });
   resize();
   load(true);
   requestAnimationFrame(frame);

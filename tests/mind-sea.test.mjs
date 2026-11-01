@@ -13,6 +13,7 @@ import {
   pointId,
   sectorOf,
   SECTOR_LABELS,
+  dayPartLabelOf,
 } from '../src/mind-sea.js';
 
 let passed = 0;
@@ -45,12 +46,12 @@ test('buildScene 给 misc 点补 cluster 与 byCluster 统计', () => {
   const scene = buildScene({ points, now });
   const misc = scene.points.filter((p) => p.topic === 'misc');
   assert.ok(misc.length >= 2, 'misc 点丢了');
-  const labels = Object.values(SECTOR_LABELS);
+  const labels=['深夜','早上','上午','中午','下午','晚上','夜里'];
   for (const point of misc) {
     assert.ok(point.cluster && !point.cluster.includes('-'), `簇名还是 slug: ${point.cluster}`);
     assert.ok(labels.includes(point.cluster), `簇名不在中文表里: ${point.cluster}`);
   }
-  assert.ok(scene.stats.byCluster['撒娇黏人'] >= 1, `byCluster 不对: ${JSON.stringify(scene.stats.byCluster)}`);
+  assert.ok(scene.stats.byCluster[dayPartLabelOf(now)] >= 2, `byCluster 不对: ${JSON.stringify(scene.stats.byCluster)}`);
   assert.equal(scene.points.find((p) => p.topic === 'owner-profile').cluster, '主人是谁');
 });
 
